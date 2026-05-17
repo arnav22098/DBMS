@@ -1,55 +1,107 @@
 # Online Shopping System
 
-This repository contains a database systems course project for a console-based online shopping platform built with `Python` and `SQLite`. The project models the core flow of a small e-commerce system, including customer login, product browsing, cart management, checkout, and purchase-history analysis.
+This repository contains a database systems course project for a console-based online shopping platform built with `Python` and `SQLite`. It covers customer login, product browsing, cart persistence, checkout, order history, and customer-spending analysis while keeping the original academic project theme intact.
 
-## What the Project Covers
+## What Changed
 
-- customer login and validation
-- product browsing by category
-- shopping cart and order placement flow
-- inventory updates during checkout
-- purchase and customer analysis using the backing database
+The repo has been cleaned up from a one-off script submission into a more maintainable project:
+
+- separated schema creation, data seeding, analytics, and runtime app logic
+- fixed checkout correctness with real `orders`, `order_items`, `payments`, and `transactions`
+- removed the hardcoded local database path
+- added SQLite constraints and triggers for inventory sync and login blocking
+- kept `Zapnit.py` and `SQLzapnit.py` as compatibility entry points
+- added tests for login blocking, checkout, stock updates, and analytics
 
 ## Tech Stack
 
 - `Python`
 - `SQLite`
-- file-based local database for rapid prototyping
+- file-based local database for fast setup and inspection
 
 ## Repository Structure
 
-- `Zapnit.py`: application logic for the shopping flow
-- `SQLzapnit.py`: schema setup and database-side logic
-- `my_database.db`: sample SQLite database used by the project
-- `Online Shopping System.zip`: archived submission bundle from the original course project
+- `app.py`: interactive console app for login, browsing, cart management, checkout, and history
+- `store.py`: core business logic for authentication, cart persistence, and checkout
+- `analytics.py`: customer and operational analysis queries
+- `seed.py`: rebuilds the sample database with clean schema and demo data
+- `db.py`: shared SQLite connection and schema helpers
+- `schema.sql`: normalized SQLite schema, constraints, and triggers
+- `tests/test_workflow.py`: regression coverage for the main workflows
+- `Zapnit.py`: compatibility launcher for the shopping app
+- `SQLzapnit.py`: compatibility launcher for database reset/setup
+- `Online Shopping System.zip`: archived original submission bundle
 
 ## Running the Project
 
-Make sure Python 3 is installed, then run:
-
-```powershell
-python Zapnit.py
-```
-
-If you want to inspect or rebuild the database setup logic, review:
+Make sure Python 3 is installed, then rebuild the sample database:
 
 ```powershell
 python SQLzapnit.py
 ```
 
-## Design Notes
+Run the shopping app:
 
-The project was built as an academic system design exercise, so the focus is on demonstrating relational modeling and end-to-end application flow rather than production deployment. The schema and scripts show how products, customers, carts, orders, reviews, payments, and transaction records can work together in a small database-backed commerce system.
+```powershell
+python Zapnit.py
+```
+
+Run the test suite:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
+## Sample Login Credentials
+
+- `Raj Kumar` / `9123456780`
+- `Sita Garg` / `9234567891`
+- `Amit Patel` / `9345678902`
+
+Three failed attempts against a known phone number will block that customer account through a database trigger.
+
+## Schema Overview
+
+The current schema models:
+
+- customers and login attempts
+- vendors and products
+- carts and cart items
+- orders and order items
+- payments and transactions
+- delivery agents, reviews, and inventory
+
+```mermaid
+erDiagram
+    CUSTOMERS ||--o{ CARTS : owns
+    CARTS ||--o{ CART_ITEMS : contains
+    PRODUCTS ||--o{ CART_ITEMS : appears_in
+    CUSTOMERS ||--o{ ORDERS : places
+    ORDERS ||--o{ ORDER_ITEMS : contains
+    PRODUCTS ||--o{ ORDER_ITEMS : purchased_as
+    ORDERS ||--|| PAYMENTS : paid_by
+    ORDERS ||--o{ TRANSACTIONS : logged_as
+    PRODUCTS }o--|| VENDORS : supplied_by
+    PRODUCTS ||--|| INVENTORY : tracked_in
+    CUSTOMERS ||--o{ LOGIN_ATTEMPTS : records
+    CUSTOMERS ||--o{ PRODUCT_REVIEWS : writes
+    PRODUCTS ||--o{ PRODUCT_REVIEWS : receives
+    DELIVERY_AGENTS ||--o{ ORDERS : assigned_to
+```
+
+## Functional Coverage
+
+- customer login with blocked-account enforcement
+- browsing all products or products by category
+- persistent cart updates before checkout
+- checkout with stock validation and payment logging
+- delivery-agent assignment
+- order-history inspection
+- per-customer spending and favorite-product analysis
+- low-stock and top-customer operational reporting
 
 ## Contributors
 
 - Arnav Batra
 - Dikshant
 - Snigdha
-
-## Future Improvements
-
-- move from a script-based interface to a simple web UI
-- separate database setup from runtime application code
-- add stronger input validation and error handling
-- add tests for cart, checkout, and stock updates
